@@ -1,0 +1,180 @@
+<!DOCTYPE html> <!-- Declara que el documento es HTML5 -->
+<html lang="es"> <!-- Inicia el documento HTML y define idioma español -->
+<head> <!-- Encabezado donde van metadatos y configuraciones -->
+  <meta charset="UTF-8"> <!-- Permite caracteres especiales -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ajusta diseño a móviles -->
+  <title>Rentabilidad App</title> <!-- Título de la pestaña -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Librería para gráficas -->
+
+  <style> /* Estilos CSS */
+
+    body{ /* Estilos del fondo general */
+      margin:0; /* Quita margen */
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto; /* Tipografía */
+      background:linear-gradient(180deg,#4f46e5,#06b6d4); /* Fondo degradado */
+      display:flex; /* Activa flexbox */
+      justify-content:center; /* Centra horizontal */
+      align-items:center; /* Centra vertical */
+      min-height:100vh; /* Altura mínima pantalla */
+      color:#111; /* Color texto */
+    }
+
+    .phone{ /* Contenedor tipo celular */
+      width:100%; /* Ocupa ancho disponible */
+      max-width:420px; /* Máximo ancho */
+      height:100vh; /* Altura pantalla */
+      background:white; /* Fondo blanco */
+      border-radius:30px; /* Bordes redondeados */
+      padding:20px; /* Espacio interno */
+      box-sizing:border-box; /* Incluye padding en tamaño */
+      display:flex; /* Flex layout */
+      flex-direction:column; /* Orden vertical */
+      box-shadow:0 25px 50px rgba(0,0,0,.3); /* Sombra */
+    }
+
+    .title{ /* Título */
+      text-align:center; /* Centrado */
+      font-size:24px; /* Tamaño texto */
+      font-weight:700; /* Grosor */
+      margin-bottom:15px; /* Espacio abajo */
+      color:#4f46e5; /* Color */
+    }
+
+    .input-group{ /* Grupo inputs */
+      display:flex; /* Flex */
+      flex-direction:column; /* Vertical */
+      gap:12px; /* Espacio entre inputs */
+      margin-bottom:15px; /* Espacio inferior */
+    }
+
+    input{ /* Campos de texto */
+      padding:16px; /* Espacio interno */
+      border-radius:14px; /* Bordes redondeados */
+      border:1px solid #e5e7eb; /* Borde gris */
+      font-size:16px; /* Tamaño texto */
+      background:#f9fafb; /* Fondo */
+    }
+
+    input:focus{ /* Cuando el usuario selecciona input */
+      outline:none; /* Quita borde azul navegador */
+      border-color:#6366f1; /* Cambia borde */
+      background:white; /* Fondo blanco */
+      box-shadow:0 0 0 3px rgba(99,102,241,.2); /* Halo */
+    }
+
+    button{ /* Botón calcular */
+      padding:16px; /* Espacio interno */
+      border:none; /* Sin borde */
+      border-radius:18px; /* Bordes redondos */
+      font-size:18px; /* Tamaño texto */
+      font-weight:700; /* Grosor */
+      background:linear-gradient(135deg,#6366f1,#06b6d4); /* Degradado */
+      color:white; /* Texto blanco */
+      cursor:pointer; /* Cursor mano */
+      transition:.2s; /* Animación */
+    }
+
+    button:active{ /* Cuando se presiona */
+      transform:scale(.97); /* Efecto presión */
+    }
+
+    #resultado{ /* Caja resultado */
+      margin-top:15px; /* Espacio arriba */
+      padding:15px; /* Espacio interno */
+      border-radius:16px; /* Bordes */
+      text-align:center; /* Texto centrado */
+      font-weight:600; /* Grosor */
+      background:#f3f4f6; /* Fondo gris */
+    }
+
+    canvas{ /* Gráfica */
+      margin-top:20px; /* Separación */
+      max-height:260px; /* Altura máxima */
+    }
+
+    .spacer{flex:1} /* Espaciador flexible */
+
+    .footer{ /* Texto inferior */
+      text-align:center; /* Centrado */
+      font-size:12px; /* Tamaño */
+      color:#6b7280; /* Color gris */
+      margin-top:8px; /* Margen */
+    }
+  </style>
+</head>
+
+<body> <!-- Cuerpo visible -->
+  <div class="phone"> <!-- Contenedor principal -->
+
+    <div class="title">📊 Rentabilidad</div> <!-- Título app -->
+
+    <div class="input-group"> <!-- Grupo inputs -->
+      <input type="number" id="ingresos" placeholder="💰 Ingresos"> <!-- Campo ingresos -->
+      <input type="number" id="costos" placeholder="💸 Costos"> <!-- Campo costos -->
+      <input type="number" id="impuestos" placeholder="📉 % Impuestos"> <!-- Campo impuestos -->
+    </div>
+
+    <button onclick="calcular()">Calcular</button> <!-- Botón que ejecuta función -->
+
+    <div id="resultado">Ingresa datos</div> <!-- Zona resultado -->
+
+    <canvas id="grafica"></canvas> <!-- Lienzo gráfica -->
+
+    <div class="spacer"></div> <!-- Espacio flexible -->
+
+    <div style="margin-top:18px;padding:15px;border-radius:14px;background:#eef2ff;font-size:13px;line-height:1.4;text-align:left;">
+<b>OBJETIVO GENERAL</b><br>
+Analizar y aplicar los principales métodos financieros en los proyectos de emprendedurismo con el fin de evaluar su eficacia en la planificación, gestión de recursos, proyección financiera y toma de decisiones estratégicas, identificando su impacto en la rentabilidad, sostenibilidad y crecimiento de los emprendimientos.
+</div>
+
+    <div class="footer">App financiera básica</div> <!-- Pie -->
+
+  </div>
+
+<script> // Código JavaScript
+let chart; // Variable para guardar gráfica
+
+function calcular(){ // Función principal
+  const ingresos = parseFloat(document.getElementById('ingresos').value); // Obtiene ingresos
+  const costos = parseFloat(document.getElementById('costos').value); // Obtiene costos
+  const impuestos = parseFloat(document.getElementById('impuestos').value) || 0; // Obtiene impuestos
+  const res = document.getElementById('resultado'); // Referencia resultado
+
+  if(isNaN(ingresos) || isNaN(costos)){ // Validación datos
+    res.textContent = "⚠️ Ingresa valores válidos"; // Mensaje error
+    res.style.background="#fde68a"; // Color advertencia
+    return; // Detiene ejecución
+  }
+
+  const utilidadBruta = ingresos - costos; // Calcula ganancia antes impuestos
+  const impuestoMonto = utilidadBruta * (impuestos/100); // Calcula impuestos
+  const utilidadNeta = utilidadBruta - impuestoMonto; // Ganancia final
+  const rentabilidad = (utilidadNeta / ingresos) * 100; // % rentabilidad
+
+  if(utilidadNeta > 0){ // Si gana dinero
+    res.innerHTML = `✅ Rentable<br>${utilidadNeta.toFixed(2)} ganancia<br>${rentabilidad.toFixed(1)}%`; // Mensaje
+    res.style.background="#bbf7d0"; // Verde
+  } else if(utilidadNeta < 0){ // Si pierde
+    res.innerHTML = `❌ No rentable<br>${utilidadNeta.toFixed(2)} pérdida<br>${rentabilidad.toFixed(1)}%`; // Mensaje
+    res.style.background="#fecaca"; // Rojo
+  } else{ // Si queda en 0
+    res.textContent = "➖ Punto de equilibrio"; // Mensaje
+    res.style.background="#e5e7eb"; // Gris
+  }
+
+  const data={ // Datos gráfica
+    labels:["Ingresos","Costos","Impuestos","Utilidad"], // Etiquetas
+    datasets:[{data:[ingresos,costos,impuestoMonto,utilidadNeta]}] // Valores
+  };
+
+  if(chart) chart.destroy(); // Elimina gráfica anterior
+
+  chart=new Chart(document.getElementById('grafica'),{ // Crea nueva gráfica
+    type:'bar', // Tipo barras
+    data:data, // Datos
+    options:{plugins:{legend:{display:false}},responsive:true} // Opciones
+  });
+}
+</script>
+</body>
+</html>
